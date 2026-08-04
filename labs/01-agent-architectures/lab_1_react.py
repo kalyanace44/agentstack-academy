@@ -11,7 +11,10 @@ No frameworks — pure Python + OpenAI API.
 from __future__ import annotations
 
 import json
-import httpx
+try:
+    import httpx
+except Exception:
+    httpx = None
 
 # --- Tools (the actions our agent can take) ---
 
@@ -152,6 +155,8 @@ class ReActAgent:
     def _call_llm(self, messages: list[dict]) -> str:
         """Call the LLM API."""
         import os
+        if not httpx:
+            return self._simulate_response(messages)
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key or os.environ.get('OPENAI_API_KEY', 'demo')}",
