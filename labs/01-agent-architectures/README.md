@@ -10,6 +10,7 @@
 | 1.2 | Multi-Agent | Two agents collaborating on a task |
 | 1.3 | Router Agent | Agent that delegates to specialist sub-agents |
 | 1.4 | Critique Loop | Agent with self-reflection and retry |
+| 1.5 | A2A Protocol | Google Agent-to-Agent communication + discovery |
 
 ## Prerequisites
 
