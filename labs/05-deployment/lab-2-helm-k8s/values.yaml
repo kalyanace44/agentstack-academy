@@ -1,0 +1,92 @@
+# ─── Helm values.yaml ─────────────────────────────────────────────
+# ONE FILE controls your entire production deployment.
+# Change a value → helm upgrade → zero-downtime rollout.
+
+# ─── Agent App ────────────────────────────────────────────────────
+agent:
+  replicas: 2
+  image:
+    repository: ghcr.io/your-org/agent
+    tag: "1.2.0"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPU: 70
+    targetMemory: 80
+  env:
+    LLM_BASE_URL: "http://litellm:4000"
+    QDRANT_URL: "http://qdrant:6333"
+    REDIS_URL: "redis://redis:6379"
+    LOG_LEVEL: "info"
+
+# ─── LiteLLM Proxy ───────────────────────────────────────────────
+litellm:
+  replicas: 2
+  image:
+    repository: ghcr.io/berriai/litellm
+    tag: "main-latest"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ─── Qdrant ──────────────────────────────────────────────────────
+qdrant:
+  replicas: 1          # StatefulSet — scale carefully
+  storage: 10Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+# ─── Redis ───────────────────────────────────────────────────────
+redis:
+  enabled: true
+  architecture: standalone    # Use 'replication' for HA
+  maxmemory: 256mb
+  persistence:
+    enabled: true
+    size: 1Gi
+
+# ─── Ingress ─────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: agent.yourdomain.com
+      paths:
+        - path: /
+          service: agent
+          port: 8080
+  tls:
+    - secretName: agent-tls
+      hosts:
+        - agent.yourdomain.com
+
+# ─── Monitoring ──────────────────────────────────────────────────
+monitoring:
+  serviceMonitor:
+    enabled: true        # Prometheus scrapes /metrics
+  alerts:
+    enabled: true
+    rules:
+      - name: high-error-rate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        severity: critical
+      - name: high-latency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+        severity: warning

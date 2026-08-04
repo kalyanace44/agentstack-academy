@@ -1,0 +1,61 @@
+# ─── Routing Rules ────────────────────────────────────────────────
+# Map intent → model + config. Your app just sends a request with
+# metadata, the router picks the right model automatically.
+
+routes:
+  credit_decision:
+    model: gpt-4o
+    temperature: 0.1
+    max_tokens: 1000
+    system_prompt: prompts/credit-scorer.md
+    reason: "High-stakes financial decision — needs best accuracy"
+
+  faq_response:
+    model: gpt-4o-mini
+    temperature: 0.7
+    max_tokens: 500
+    system_prompt: prompts/faq-agent.md
+    reason: "Simple lookup, cost matters — use cheapest model"
+
+  fraud_analysis:
+    model: claude-sonnet
+    temperature: 0.0
+    max_tokens: 2000
+    system_prompt: prompts/fraud-analyst.md
+    reason: "Complex reasoning over evidence — Claude excels here"
+
+  document_extraction:
+    model: gpt-4o-mini
+    temperature: 0.0
+    max_tokens: 1000
+    system_prompt: prompts/doc-extractor.md
+    reason: "Structured extraction — mini is good enough"
+
+  default:
+    model: gpt-4o-mini
+    temperature: 0.5
+    max_tokens: 500
+
+# ─── Intent Detection ────────────────────────────────────────────
+# Keywords → intent mapping (cheap classification, no LLM needed)
+intent_rules:
+  credit_decision:
+    keywords: [credit, loan, limit, approve, reject, risk]
+  fraud_analysis:
+    keywords: [fraud, suspicious, alert, unusual, pattern]
+  document_extraction:
+    keywords: [extract, document, pan, aadhaar, invoice, ocr]
+  faq_response:
+    keywords: [how, what, when, help, explain, guide]
+
+# ─── Cost Tracking ───────────────────────────────────────────────
+budgets:
+  lending_team:
+    daily_limit: 5.00      # USD
+    models_allowed: [gpt-4o, gpt-4o-mini]
+  support_team:
+    daily_limit: 2.00
+    models_allowed: [gpt-4o-mini]
+  fraud_team:
+    daily_limit: 10.00
+    models_allowed: [claude-sonnet, gpt-4o]

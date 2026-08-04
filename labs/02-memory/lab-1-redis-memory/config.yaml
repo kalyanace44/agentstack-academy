@@ -1,0 +1,31 @@
+# ─── Agent Memory Config ──────────────────────────────────────────
+redis:
+  url: redis://localhost:6379
+  password: ""          # Set in production
+
+# ─── Memory Namespaces ───────────────────────────────────────────
+# Each namespace = isolated memory space with its own rules
+namespaces:
+  conversation:
+    prefix: "conv:"
+    ttl_seconds: 86400       # 24 hours — conversations expire after 1 day
+    max_entries: 50          # Keep last 50 messages per session
+    description: "Short-term conversation history per session"
+
+  user_facts:
+    prefix: "facts:"
+    ttl_seconds: 2592000     # 30 days — learned facts persist longer
+    max_entries: 100
+    description: "Long-term facts about users (preferences, corrections)"
+
+  session_state:
+    prefix: "state:"
+    ttl_seconds: 3600        # 1 hour — active session state
+    max_entries: 20
+    description: "Current task state (what step are we on?)"
+
+# ─── Eviction ────────────────────────────────────────────────────
+eviction:
+  strategy: lru              # Least Recently Used (Redis default)
+  max_memory: 100mb
+  on_full: evict_oldest      # evict_oldest | reject_new | alert

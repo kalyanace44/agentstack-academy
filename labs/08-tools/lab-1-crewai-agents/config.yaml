@@ -1,0 +1,56 @@
+# ─── CrewAI Agent Config ──────────────────────────────────────────
+# Define agents + tasks in YAML. Python just loads and runs this.
+
+agents:
+  researcher:
+    role: "Research Analyst"
+    goal: "Find accurate, relevant information"
+    backstory: "Expert at searching knowledge bases and summarizing findings"
+    llm: gpt-4o-mini
+    tools:
+      - web_search
+      - qdrant_search
+    verbose: true
+
+  writer:
+    role: "Technical Writer"
+    goal: "Produce clear, actionable reports"
+    backstory: "Skilled at turning complex research into simple explanations"
+    llm: gpt-4o-mini
+    tools: []
+    verbose: true
+
+  reviewer:
+    role: "Quality Reviewer"
+    goal: "Catch errors, verify claims, improve clarity"
+    backstory: "Meticulous editor who ensures accuracy and completeness"
+    llm: gpt-4o
+    tools:
+      - web_search
+    verbose: true
+
+# ─── Tasks (what to do, in order) ────────────────────────────────
+tasks:
+  research:
+    description: "Research {topic}: find key facts, recent developments, and best practices"
+    agent: researcher
+    expected_output: "Bullet list of 5-10 key findings with sources"
+
+  write_report:
+    description: "Write a 500-word report based on research findings"
+    agent: writer
+    expected_output: "Structured report with intro, findings, recommendations"
+    context: [research]    # This task gets output from 'research'
+
+  review:
+    description: "Review the report for accuracy, clarity, and completeness"
+    agent: reviewer
+    expected_output: "Final report with corrections applied"
+    context: [write_report]
+
+# ─── Crew Settings ───────────────────────────────────────────────
+crew:
+  process: sequential          # sequential | hierarchical
+  max_rpm: 10                  # Rate limit to avoid API throttling
+  memory: true                 # Agents remember within session
+  verbose: true

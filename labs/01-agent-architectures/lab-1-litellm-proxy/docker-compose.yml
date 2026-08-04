@@ -1,0 +1,28 @@
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-fake-key}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-sk-fake-key}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: local model (no API key needed, free)
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # After startup: docker exec -it <container> ollama pull llama3.1:8b
+
+volumes:
+  ollama_data:

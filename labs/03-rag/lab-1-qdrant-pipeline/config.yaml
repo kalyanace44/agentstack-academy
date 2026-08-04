@@ -1,0 +1,40 @@
+# ─── RAG Pipeline Config ──────────────────────────────────────────
+vector_db:
+  provider: qdrant
+  url: http://localhost:6333
+  collection: knowledge-base
+
+# ─── Embedding ───────────────────────────────────────────────────
+embedding:
+  model: text-embedding-3-small     # OpenAI ($0.02/1M tokens)
+  dimensions: 1536
+  # Alternative: local model (free, private)
+  # model: ollama/nomic-embed-text
+  # dimensions: 768
+
+# ─── Chunking ────────────────────────────────────────────────────
+chunking:
+  strategy: recursive        # fixed | recursive | semantic
+  chunk_size: 512           # tokens per chunk
+  chunk_overlap: 50         # overlap between chunks
+  separators:               # split on these (in order)
+    - "\n\n"                # paragraphs first
+    - "\n"                  # then newlines
+    - ". "                  # then sentences
+
+# ─── Retrieval ───────────────────────────────────────────────────
+retrieval:
+  top_k: 5                  # return 5 most relevant chunks
+  score_threshold: 0.7      # ignore chunks below this similarity
+  rerank: false             # enable for better accuracy (slower)
+  # rerank_model: cross-encoder/ms-marco-MiniLM-L-6-v2
+
+# ─── Generation ──────────────────────────────────────────────────
+generation:
+  model: gpt-4o-mini
+  temperature: 0.2
+  max_tokens: 500
+  system_prompt: |
+    Answer based ONLY on the context provided.
+    If the context doesn't contain the answer, say "I don't know."
+    Cite which chunk you used.

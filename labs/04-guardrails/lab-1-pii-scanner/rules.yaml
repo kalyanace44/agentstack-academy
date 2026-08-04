@@ -1,0 +1,68 @@
+# ─── PII Detection Rules ─────────────────────────────────────────
+# Action: block (HTTP 451) | redact (replace with ***) | log (pass but alert)
+
+rules:
+  # Indian Financial
+  pan_card:
+    pattern: '[A-Z]{5}[0-9]{4}[A-Z]'
+    action: block
+    severity: critical
+    description: "Indian PAN number — blocks RBI compliance violation"
+
+  aadhaar:
+    pattern: '\b\d{4}\s\d{4}\s\d{4}\b'
+    action: block
+    severity: critical
+    description: "Aadhaar number — PII under Indian law (format: XXXX XXXX XXXX)"
+
+  # Global PII
+  credit_card:
+    pattern: '\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})\b'
+    action: block
+    severity: critical
+    description: "Credit card number (Visa/MC/Amex)"
+
+  email:
+    pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    action: redact
+    severity: medium
+    replacement: "[EMAIL_REDACTED]"
+    description: "Email address — redact, don't block"
+
+  phone_india:
+    pattern: '(?:\+91|91)?[6-9]\d{9}'
+    action: redact
+    severity: medium
+    replacement: "[PHONE_REDACTED]"
+
+  # Secrets
+  aws_key:
+    pattern: 'AKIA[0-9A-Z]{16}'
+    action: block
+    severity: critical
+    description: "AWS Access Key — immediate block"
+
+  generic_api_key:
+    pattern: '(?:sk-|pk_|rk_)[a-zA-Z0-9]{20,}'
+    action: block
+    severity: critical
+
+# ─── Prompt Injection ────────────────────────────────────────────
+injection_patterns:
+  - pattern: 'ignore\s+(all\s+)?(previous|prior)\s+instructions?'
+    action: block
+    severity: critical
+  - pattern: 'you\s+are\s+now\s+'
+    action: block
+    severity: high
+  - pattern: 'reveal\s+(your|the)\s+(system|initial)\s+prompt'
+    action: block
+    severity: high
+
+# ─── Global Settings ─────────────────────────────────────────────
+settings:
+  enabled: true
+  scan_input: true          # Scan user messages
+  scan_output: true         # Scan LLM responses too
+  log_blocked: true         # Log all blocked requests for audit
+  alert_webhook: ""         # Slack/PagerDuty webhook for critical blocks

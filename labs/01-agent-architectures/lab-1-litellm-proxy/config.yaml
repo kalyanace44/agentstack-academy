@@ -1,0 +1,44 @@
+model_list:
+  # Primary: fast + cheap for simple tasks
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+
+  # Premium: accurate for critical decisions
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+
+  # Fallback: if OpenAI is down
+  - model_name: gpt-4o
+    litellm_params:
+      model: anthropic/claude-sonnet-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # Local: free, private, no data leaves your network
+  - model_name: local-llama
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: http://ollama:11434
+
+# ─── Routing ─────────────────────────────────────────────────────
+router_settings:
+  routing_strategy: least-busy     # simple-shuffle | least-busy | cost-based
+  num_retries: 3
+  timeout: 30
+  fallbacks:
+    - gpt-4o: [claude-sonnet, local-llama]   # if gpt-4o fails → try these in order
+    - gpt-4o-mini: [local-llama]
+
+# ─── Rate Limits ─────────────────────────────────────────────────
+litellm_settings:
+  max_budget: 10.0               # USD — hard stop at $10/day
+  budget_duration: 24h
+  success_callback: ["langfuse"]  # send traces here
+
+# ─── API Keys for your teams ─────────────────────────────────────
+general_settings:
+  master_key: sk-master-key-change-me
+  database_url: sqlite:///./litellm.db

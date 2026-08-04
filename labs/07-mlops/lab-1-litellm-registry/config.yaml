@@ -1,0 +1,61 @@
+# ─── Model Registry ──────────────────────────────────────────────
+# Same model alias → different backends per team/environment
+
+model_list:
+  # Production model
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      mode: chat
+      tier: premium
+
+  # Canary: 10% of gpt-4o traffic goes to Claude (testing)
+  - model_name: gpt-4o
+    litellm_params:
+      model: anthropic/claude-sonnet-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      tier: premium
+
+  # Budget model
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      mode: chat
+      tier: standard
+
+# ─── Router Settings ─────────────────────────────────────────────
+router_settings:
+  routing_strategy: simple-shuffle    # Distributes between same-name models
+  num_retries: 2
+  timeout: 30
+  fallbacks:
+    - gpt-4o: [gpt-4o-mini]
+    - gpt-4o-mini: []
+
+# ─── Team Budgets ────────────────────────────────────────────────
+# Per API key limits — when budget hits 0, requests are rejected (429)
+general_settings:
+  master_key: sk-master-key
+
+litellm_settings:
+  max_budget: 50.0        # Total daily budget USD
+  budget_duration: 24h
+
+# Team keys (create via API: POST /key/generate)
+# Each team gets an API key with:
+#   - max_budget: daily spend cap
+#   - models: which models they're allowed to use
+#   - rate_limit: requests per minute
+
+# ─── Canary Config ───────────────────────────────────────────────
+# With simple-shuffle + 2 backends for "gpt-4o":
+#   - ~50% goes to OpenAI (production)
+#   - ~50% goes to Anthropic (canary)
+# To do 90/10: add 9 OpenAI entries + 1 Anthropic entry
+# In practice: use weighted routing (weight field in litellm_params)

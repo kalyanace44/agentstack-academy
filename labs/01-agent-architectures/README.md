@@ -1,30 +1,19 @@
-# Lab 01: Agent Architectures
+# Module 01: Agent Architectures
 
-> Build 4 different agent patterns from scratch. Understand when to use each.
+> Configure, deploy, and route AI agents using production tools.
 
 ## Labs
 
-| Lab | Pattern | What You Build |
-|-----|---------|----------------|
-| 1.1 | ReAct Agent | Tool-calling agent with reasoning traces |
-| 1.2 | Multi-Agent | Two agents collaborating on a task |
-| 1.3 | Router Agent | Agent that delegates to specialist sub-agents |
-| 1.4 | Critique Loop | Agent with self-reflection and retry |
-| 1.5 | A2A Protocol | Google Agent-to-Agent communication + discovery |
+| Lab | Tool | What You Do |
+|-----|------|-------------|
+| 1.1 | LiteLLM Proxy | Deploy a unified LLM gateway — one API, all providers |
+| 1.2 | Multi-Agent Routing | Route requests to different models by task type |
+| 1.3 | A2A Protocol | Agent discovery + delegation via Google A2A |
 
-## Prerequisites
+## Philosophy
 
-```bash
-pip install openai httpx
-export OPENAI_API_KEY="your-key"  # or use local Ollama
-```
-
-## Quick Start
-
-```bash
-cd labs/01-agent-architectures
-python lab_1_react.py
-python lab_2_multi_agent.py
-python lab_3_router.py
-python lab_4_critique.py
-```
+You won't implement an LLM from scratch. You'll:
+1. Deploy a proxy that unifies OpenAI/Anthropic/local models
+2. Configure routing rules in YAML
+3. Test with curl
+4. Break it and fix it
