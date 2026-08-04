@@ -186,24 +186,24 @@
     <section class="hero">
         <div class="container">
             <div class="hero-badge">🔥 New cohort starts soon — limited seats</div>
-            <h1>Everyone teaches you to<br><span class="grad">build</span> an agent.<br>We teach you to <span class="grad">ship</span> one.</h1>
-            <p>The production AI engineering school. Learn to deploy, scale, and operate AI agents — from architecture to observability.</p>
+            <h1>Everyone teaches you to<br><span class="grad">build</span> an agent.<br>We teach you to <span class="grad">deploy</span> one.</h1>
+            <p>The production AI engineering school. Configure, deploy, and operate AI agents with real tools — Docker, Helm, LiteLLM, Qdrant, LangFuse, Grafana.</p>
             <div class="hero-cta">
                 <a href="labs.html" class="btn btn-primary">Start Labs Free →</a>
                 <a href="#curriculum" class="btn btn-outline">View Curriculum</a>
             </div>
             <div class="hero-proof">
                 <div class="item"><div class="value">9</div><div class="label">Modules</div></div>
-                <div class="item"><div class="value">40+</div><div class="label">Hands-on Labs</div></div>
-                <div class="item"><div class="value">∞</div><div class="label">Lifetime Access</div></div>
-                <div class="item"><div class="value">0→Prod</div><div class="label">End-to-End</div></div>
+                <div class="item"><div class="value">13</div><div class="label">Hands-on Labs</div></div>
+                <div class="item"><div class="value">0</div><div class="label">Lines of Code</div></div>
+                <div class="item"><div class="value">Config</div><div class="label">Driven</div></div>
             </div>
         </div>
     </section>
 
     <section class="tagline">
         <div class="container">
-            <p><strong>The AI engineering job market grew 4x in 2024.</strong> But 90% of AI agents never make it to production. The gap isn't building — it's shipping. Deployment, reliability, cost, security, observability. That's what we teach.</p>
+            <p><strong>The AI engineering job market grew 4x in 2024.</strong> But 90% of AI agents never make it to production. The gap isn't building — it's deploying. You don't need to implement BM25 from scratch. You need to know which tool to use, how to configure it, and how to debug it when it breaks.</p>
         </div>
     </section>
 
@@ -215,102 +215,100 @@
                 <div class="module-card">
                     <div class="module-num">Module 01</div>
                     <h3>Agent Architectures</h3>
-                    <p>ReAct, tool-use, multi-agent orchestration, communication patterns. When to use agents — and when not to.</p>
+                    <p>Deploy a unified LLM proxy. Route requests to the right model by task type. One API, all providers, automatic fallbacks.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">ReAct</span>
-                        <span class="topic-tag">Function Calling</span>
-                        <span class="topic-tag">LangGraph</span>
-                        <span class="topic-tag">CrewAI</span>
+                        <span class="topic-tag">LiteLLM</span>
+                        <span class="topic-tag">Routing</span>
+                        <span class="topic-tag">Fallbacks</span>
+                        <span class="topic-tag">A2A Protocol</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 02</div>
                     <h3>Memory & State</h3>
-                    <p>Short-term buffers, long-term vector stores, knowledge graphs. Production concerns: TTL, eviction, multi-tenant isolation.</p>
+                    <p>Persistent agent memory with Redis. Namespaces, TTL, eviction policies. Zero code — configure memory types in YAML.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">MemGPT</span>
-                        <span class="topic-tag">Entity Memory</span>
-                        <span class="topic-tag">Graph Memory</span>
-                        <span class="topic-tag">Reflection</span>
+                        <span class="topic-tag">Redis</span>
+                        <span class="topic-tag">TTL</span>
+                        <span class="topic-tag">Namespaces</span>
+                        <span class="topic-tag">LRU Eviction</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 03</div>
                     <h3>RAG Systems</h3>
-                    <p>Chunking, embeddings, vector databases, hybrid retrieval, reranking. How to evaluate and debug retrieval quality.</p>
+                    <p>Vector search with Qdrant. Configure chunking, embeddings, and retrieval in YAML. Docker compose up → working RAG pipeline.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">Pinecone</span>
-                        <span class="topic-tag">pgvector</span>
-                        <span class="topic-tag">HyDE</span>
-                        <span class="topic-tag">RAPTOR</span>
+                        <span class="topic-tag">Qdrant</span>
+                        <span class="topic-tag">Embeddings</span>
+                        <span class="topic-tag">Hybrid Search</span>
                         <span class="topic-tag">Reranking</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 04</div>
                     <h3>Guardrails & Safety</h3>
-                    <p>Prompt injection, PII scanning, hallucination detection, output validation. Cost guardrails and circuit breakers.</p>
+                    <p>PII scanner + prompt firewall driven by rules.yaml. Block PAN, Aadhaar, credit cards. Detect prompt injection. No code changes.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">NeMo</span>
-                        <span class="topic-tag">Guardrails AI</span>
-                        <span class="topic-tag">PII Scan</span>
-                        <span class="topic-tag">Jailbreak</span>
+                        <span class="topic-tag">PII Rules</span>
+                        <span class="topic-tag">Injection Block</span>
+                        <span class="topic-tag">Redaction</span>
+                        <span class="topic-tag">RBI Compliance</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 05</div>
-                    <h3>Deployment Patterns</h3>
-                    <p>Kubernetes-native agents, serverless, edge deployment. Scaling patterns, queue-based architectures, multi-region failover.</p>
+                    <h3>Deployment</h3>
+                    <p>Full-stack Docker Compose (5 services in one command). Production Helm charts with HPA, PDB, TLS. Rolling updates, rollbacks.</p>
                     <div class="module-topics">
+                        <span class="topic-tag">Docker Compose</span>
+                        <span class="topic-tag">Helm</span>
                         <span class="topic-tag">K8s</span>
-                        <span class="topic-tag">Modal</span>
-                        <span class="topic-tag">Lambda</span>
                         <span class="topic-tag">HPA</span>
-                        <span class="topic-tag">Queue</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 06</div>
                     <h3>Observability</h3>
-                    <p>Trace agent reasoning chains. Debug infinite loops. Track costs per agent per task. Latency profiling across the full stack.</p>
+                    <p>LangFuse for agent tracing (see every decision). Grafana + Prometheus for metrics, alerts, cost dashboards.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">LangSmith</span>
-                        <span class="topic-tag">Arize</span>
-                        <span class="topic-tag">OpenTelemetry</span>
+                        <span class="topic-tag">LangFuse</span>
+                        <span class="topic-tag">Grafana</span>
                         <span class="topic-tag">Prometheus</span>
+                        <span class="topic-tag">Alerts</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 07</div>
                     <h3>MLOps for Agents</h3>
-                    <p>Model registry, A/B testing, canary deployments, rollbacks. Continuous evaluation on production traffic.</p>
+                    <p>Model registry in LiteLLM config. Canary deployments (5% → 100%). A/B testing by config. Budget caps per team.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">W&B</span>
-                        <span class="topic-tag">A/B Testing</span>
+                        <span class="topic-tag">LiteLLM Registry</span>
                         <span class="topic-tag">Canary</span>
-                        <span class="topic-tag">Eval</span>
+                        <span class="topic-tag">Budgets</span>
+                        <span class="topic-tag">A/B Config</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 08</div>
                     <h3>Tools Ecosystem</h3>
-                    <p>Deep dives into LangChain, CrewAI, DSPy, Semantic Kernel, vLLM. When to use what — and how to combine them.</p>
+                    <p>Multi-agent teams with CrewAI (YAML config). LangGraph state machines. Define agents + tasks in config, Python is just glue.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">LangChain</span>
-                        <span class="topic-tag">DSPy</span>
-                        <span class="topic-tag">vLLM</span>
-                        <span class="topic-tag">AutoGen</span>
+                        <span class="topic-tag">CrewAI</span>
+                        <span class="topic-tag">LangGraph</span>
+                        <span class="topic-tag">Config-Driven</span>
+                        <span class="topic-tag">Orchestration</span>
                     </div>
                 </div>
                 <div class="module-card">
                     <div class="module-num">Module 09</div>
-                    <h3>Production Case Studies</h3>
-                    <p>Real-world architectures: support agents at 100K/day, code review bots, data pipeline agents, document processing at scale.</p>
+                    <h3>Production</h3>
+                    <p>Everything combined: full-stack agent system + cost optimization. Route by complexity → save 70% without losing quality.</p>
                     <div class="module-topics">
-                        <span class="topic-tag">Scale</span>
-                        <span class="topic-tag">Reliability</span>
-                        <span class="topic-tag">Cost</span>
-                        <span class="topic-tag">Postmortems</span>
+                        <span class="topic-tag">Full Stack</span>
+                        <span class="topic-tag">Cost Routing</span>
+                        <span class="topic-tag">Load Test</span>
+                        <span class="topic-tag">Break & Fix</span>
                     </div>
                 </div>
             </div>
