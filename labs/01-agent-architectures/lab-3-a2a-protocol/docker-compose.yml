@@ -1,0 +1,39 @@
+services:
+  credit-agent:
+    build: .
+    command: ["python", "server.py", "credit_scorer"]
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+    working_dir: /app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 5s
+      retries: 3
+
+  fraud-agent:
+    build: .
+    command: ["python", "server.py", "fraud_detector"]
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+    working_dir: /app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 5s
+      retries: 3
+
+  kyc-agent:
+    build: .
+    command: ["python", "server.py", "kyc_verifier"]
+    ports:
+      - "8003:8003"
+    volumes:
+      - .:/app
+    working_dir: /app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 5s
+      retries: 3

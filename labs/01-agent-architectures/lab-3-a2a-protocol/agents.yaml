@@ -1,0 +1,82 @@
+# ─── Agent Definitions ────────────────────────────────────────────
+# Each agent publishes an Agent Card at /.well-known/agent.json
+# Other agents discover them by skill name.
+
+registry:
+  url: http://localhost:8000
+  discovery_path: /.well-known/agents
+
+agents:
+  credit_scorer:
+    name: "CreditScoringAgent"
+    description: "Evaluates creditworthiness from income + history"
+    url: http://localhost:8001
+    version: "1.0"
+    skills:
+      - id: credit_score
+        description: "Score a credit application (0-100 risk)"
+        input:
+          income: number
+          credit_history_years: number
+          defaults: number
+        output:
+          risk_score: number
+          approved: boolean
+          credit_limit: number
+
+  fraud_detector:
+    name: "FraudDetectionAgent"
+    description: "Detects fraud signals in applications"
+    url: http://localhost:8002
+    version: "1.0"
+    skills:
+      - id: fraud_check
+        description: "Check application for fraud signals"
+        input:
+          applicant_id: string
+          income: number
+          address_changes: number
+        output:
+          fraud_score: number
+          signals: list
+          block: boolean
+
+  kyc_verifier:
+    name: "KYCVerificationAgent"
+    description: "Verifies identity documents (PAN, Aadhaar)"
+    url: http://localhost:8003
+    version: "1.0"
+    skills:
+      - id: verify_identity
+        description: "Verify PAN/Aadhaar against government DB"
+        input:
+          document_type: string
+          document_number: string
+          name: string
+        output:
+          verified: boolean
+          match_score: number
+          issues: list
+
+# ─── Orchestrator ────────────────────────────────────────────────
+orchestrator:
+  name: "LoanOrchestrator"
+  description: "End-to-end loan processing via agent delegation"
+  url: http://localhost:8000
+  pipeline:
+    # Order matters: run these checks in sequence
+    - skill: fraud_check
+      on_fail: reject        # If fraud_score > 0.5, stop here
+    - skill: verify_identity
+      on_fail: manual_review  # If verification fails, queue for human
+    - skill: credit_score
+      on_fail: reject        # If risk > 70, reject
+
+# ─── Task Settings ───────────────────────────────────────────────
+task:
+  timeout_seconds: 30
+  max_retries: 2
+  lifecycle:
+    - submitted
+    - working
+    - completed    # or: failed, cancelled
