@@ -1,0 +1,48 @@
+# ─── Vector Memory Config ─────────────────────────────────────────
+qdrant:
+  url: http://localhost:6333
+  collection: agent-memory
+
+embedding:
+  provider: openai
+  model: text-embedding-3-small
+  dimensions: 1536
+
+# ─── Memory Settings ─────────────────────────────────────────────
+memory:
+  # How similar must a memory be to be recalled? (0.0 = anything, 1.0 = exact)
+  similarity_threshold: 0.7
+
+  # Max memories returned per query
+  top_k: 5
+
+  # Auto-expire old memories (0 = never expire)
+  ttl_days: 30
+
+  # Namespace isolation — each user/session gets own memory space
+  namespaces:
+    enabled: true
+    strategy: user_id    # user_id | session_id | conversation_id
+
+# ─── Memory Types ────────────────────────────────────────────────
+# Different memory types stored in the same collection with metadata filters
+types:
+  conversation:
+    description: "What was said in past conversations"
+    weight: 1.0
+    ttl_days: 7
+
+  decision:
+    description: "Important decisions made by the agent"
+    weight: 1.5       # Decisions are weighted higher in recall
+    ttl_days: 90
+
+  fact:
+    description: "Learned facts about user/environment"
+    weight: 1.2
+    ttl_days: 0       # Never expire
+
+  preference:
+    description: "User preferences and corrections"
+    weight: 2.0       # Highest weight — user corrections matter most
+    ttl_days: 0       # Never expire

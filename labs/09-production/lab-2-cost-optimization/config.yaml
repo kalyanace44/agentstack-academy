@@ -1,0 +1,86 @@
+# ─── Cost Routing Rules ──────────────────────────────────────────
+# Route requests by complexity → right model → minimum spend.
+# One file controls your entire cost strategy.
+
+routing:
+  # ─── Tier 1: Simple (80% of traffic → cheapest model) ─────────
+  simple:
+    model: gpt-4o-mini
+    max_tokens: 200
+    cost_per_1k_tokens: 0.00015
+    match:
+      max_input_length: 100       # Short inputs = simple questions
+      keywords:
+        - hello
+        - thanks
+        - yes
+        - no
+        - ok
+        - help
+        - hi
+        - bye
+
+  # ─── Tier 2: Medium (15% of traffic) ──────────────────────────
+  medium:
+    model: gpt-4o-mini
+    max_tokens: 500
+    cost_per_1k_tokens: 0.00015
+    match:
+      max_input_length: 500
+      patterns:
+        - "how.*to"
+        - "what.*is"
+        - "explain"
+        - "compare"
+        - "list"
+        - "summarize"
+
+  # ─── Tier 3: Complex (4% of traffic → expensive model) ────────
+  complex:
+    model: gpt-4o
+    max_tokens: 2000
+    cost_per_1k_tokens: 0.005
+    match:
+      patterns:
+        - "analyze"
+        - "design"
+        - "architect"
+        - "review.*code"
+        - "debug"
+        - "optimize"
+        - "write.*(?:function|class|module)"
+
+  # ─── Tier 4: Critical (1% of traffic → best model) ────────────
+  critical:
+    model: claude-sonnet
+    max_tokens: 4000
+    cost_per_1k_tokens: 0.003
+    match:
+      patterns:
+        - "fraud"
+        - "compliance"
+        - "security.*(?:audit|review)"
+        - "legal"
+        - "financial.*(?:report|analysis)"
+
+# ─── Caching ─────────────────────────────────────────────────────
+cache:
+  enabled: true
+  backend: redis
+  ttl_seconds: 3600           # Cache identical queries for 1 hour
+  # Identical prompt+model → cached response ($0 cost)
+  # Expected cache hit rate: 15-30% for support bots
+
+# ─── Budget Controls ─────────────────────────────────────────────
+budget:
+  daily_limit_usd: 50.0
+  alert_threshold: 0.8       # Alert at 80% of daily budget
+  per_request_max_usd: 0.10  # No single request > $0.10
+  alert_webhook: ""           # Slack/PagerDuty URL
+
+# ─── Cost Comparison ─────────────────────────────────────────────
+# At 10,000 requests/day:
+#   Naive (all gpt-4o):     ~$150/day ($4,500/month)
+#   Smart routing:          ~$25/day  ($750/month)
+#   With caching:           ~$18/day  ($540/month)
+#   Savings: 88% ($3,960/month)

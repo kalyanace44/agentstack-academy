@@ -1,0 +1,127 @@
+# ─── LangGraph Workflow Config ────────────────────────────────────
+# Define agent workflows as a graph: nodes (actions) + edges (transitions)
+# This is what frameworks like LangGraph actually configure under the hood.
+
+workflow:
+  name: "support-ticket-resolver"
+  description: "Classify → route → resolve → verify"
+
+# ─── Nodes (what each step does) ─────────────────────────────────
+nodes:
+  classify:
+    type: llm
+    model: gpt-4o-mini
+    prompt: |
+      Classify this support ticket into one category:
+      - billing (payment issues, refunds, invoices)
+      - technical (bugs, errors, API issues)
+      - account (login, permissions, profile)
+      - general (everything else)
+      
+      Ticket: {input}
+      Category:
+    output: category
+
+  route:
+    type: conditional
+    condition: "state.category"
+    branches:
+      billing: handle_billing
+      technical: handle_technical
+      account: handle_account
+      general: handle_general
+
+  handle_billing:
+    type: llm
+    model: gpt-4o-mini
+    prompt: |
+      You are a billing support agent. Help resolve this:
+      Ticket: {input}
+      
+      Check: refund eligibility, payment status, invoice issues.
+      Respond with a resolution and any actions needed.
+    tools:
+      - check_payment_status
+      - issue_refund
+      - generate_invoice
+
+  handle_technical:
+    type: llm
+    model: gpt-4o          # More capable model for technical issues
+    prompt: |
+      You are a technical support agent. Debug and resolve:
+      Ticket: {input}
+      
+      Check logs, suggest fixes, escalate if critical.
+    tools:
+      - search_docs
+      - check_logs
+      - create_jira_ticket
+
+  handle_account:
+    type: llm
+    model: gpt-4o-mini
+    prompt: |
+      You are an account support agent. Resolve:
+      Ticket: {input}
+      
+      Handle: password resets, permission changes, profile updates.
+    tools:
+      - reset_password
+      - update_permissions
+
+  handle_general:
+    type: llm
+    model: gpt-4o-mini
+    prompt: |
+      You are a general support agent. Help with:
+      Ticket: {input}
+
+  verify:
+    type: llm
+    model: gpt-4o-mini
+    prompt: |
+      Review this resolution. Is it complete and correct?
+      Original ticket: {input}
+      Resolution: {resolution}
+      
+      Respond: APPROVED or NEEDS_REVIEW (with reason)
+    output: verification
+
+  escalate:
+    type: action
+    action: create_escalation
+    notify: on-call-team
+
+# ─── Edges (flow between nodes) ──────────────────────────────────
+edges:
+  - from: START
+    to: classify
+
+  - from: classify
+    to: route
+
+  - from: route
+    to: [handle_billing, handle_technical, handle_account, handle_general]
+    type: conditional
+
+  - from: [handle_billing, handle_technical, handle_account, handle_general]
+    to: verify
+
+  - from: verify
+    to: END
+    condition: "state.verification == 'APPROVED'"
+
+  - from: verify
+    to: escalate
+    condition: "state.verification == 'NEEDS_REVIEW'"
+
+  - from: escalate
+    to: END
+
+# ─── Settings ────────────────────────────────────────────────────
+settings:
+  max_iterations: 5          # Prevent infinite loops
+  timeout_seconds: 60
+  checkpoint: true           # Save state at each node (resumable)
+  parallel_nodes: false      # Sequential for support (order matters)

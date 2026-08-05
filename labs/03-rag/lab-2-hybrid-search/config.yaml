@@ -1,0 +1,53 @@
+# ─── Hybrid Search Config ─────────────────────────────────────────
+vector_db:
+  provider: qdrant
+  url: http://localhost:6333
+  collection: hybrid-docs
+
+# ─── Indexing ────────────────────────────────────────────────────
+indexing:
+  # Dense vectors (semantic)
+  dense:
+    model: text-embedding-3-small
+    dimensions: 1536
+
+  # Sparse vectors (BM25 keyword matching)
+  sparse:
+    enabled: true
+    tokenizer: whitespace    # whitespace | word_piece
+    language: english
+    # Qdrant handles BM25 natively — no external service needed
+
+# ─── Search ──────────────────────────────────────────────────────
+search:
+  # Reciprocal Rank Fusion weights
+  # Higher = more influence on final ranking
+  fusion:
+    strategy: rrf            # rrf (reciprocal rank fusion) | linear
+    dense_weight: 0.6        # Semantic similarity weight
+    sparse_weight: 0.4       # Keyword match weight (good for code, errors)
+
+  # When to prefer which:
+  #   dense_weight > sparse: conceptual/broad questions
+  #   sparse_weight > dense: exact terms, error codes, product names
+
+  top_k: 5
+  score_threshold: 0.3       # Minimum score to include
+
+# ─── Reranking (optional) ────────────────────────────────────────
+reranker:
+  enabled: false
+  provider: cohere           # cohere | cross-encoder | none
+  model: rerank-english-v3.0
+  top_n: 3                   # Rerank top_k, return top_n
+
+# ─── Chunking ────────────────────────────────────────────────────
+chunking:
+  strategy: recursive        # recursive | semantic | fixed
+  chunk_size: 512
+  chunk_overlap: 50
+  separators:
+    - "\n\n"
+    - "\n"
+    - ". "
+    - " "

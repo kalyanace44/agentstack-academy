@@ -1,0 +1,80 @@
+# ─── A/B Testing Config (LiteLLM) ────────────────────────────────
+# Route traffic between models to compare quality + cost.
+# No code changes needed — all via proxy config.
+
+model_list:
+  # ─── Control: Current production model (90% traffic) ───────────
+  - model_name: agent-model
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      id: control-gpt4o-mini
+      tier: production
+
+  # ─── Variant A: Challenger model (5% traffic) ──────────────────
+  - model_name: agent-model
+    litellm_params:
+      model: anthropic/claude-haiku-3
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      id: variant-a-haiku
+      tier: canary
+
+  # ─── Variant B: Another challenger (5% traffic) ────────────────
+  - model_name: agent-model
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      id: variant-b-gpt4o
+      tier: canary
+
+# ─── Router: Weighted traffic splitting ──────────────────────────
+router_settings:
+  routing_strategy: usage-based-routing-v2
+  # Weight = percentage of traffic
+  # Must sum to 1.0
+  model_group_alias:
+    agent-model:
+      - model: openai/gpt-4o-mini
+        weight: 0.90      # 90% traffic
+      - model: anthropic/claude-haiku-3
+        weight: 0.05      # 5% canary
+      - model: openai/gpt-4o
+        weight: 0.05      # 5% canary
+
+  num_retries: 2
+  timeout: 30
+  fallbacks:
+    - agent-model: [openai/gpt-4o-mini]   # Fallback to control
+
+# ─── Evaluation Metrics ──────────────────────────────────────────
+# Track these per variant in LangFuse/Grafana
+evaluation:
+  metrics:
+    - name: latency_p95
+      threshold: 5000ms       # Fail if p95 > 5s
+    - name: cost_per_request
+      threshold: $0.01        # Fail if avg > $0.01
+    - name: user_rating
+      threshold: 4.0          # Fail if avg rating < 4/5
+    - name: task_completion
+      threshold: 0.85         # Fail if < 85% tasks completed
+
+  # Auto-rollback: if variant fails metrics for 1 hour, remove it
+  auto_rollback:
+    enabled: true
+    window_minutes: 60
+    min_requests: 100         # Need 100+ requests before judging
+
+# ─── Promotion Rules ─────────────────────────────────────────────
+# When a variant WINS (beats control on all metrics):
+promotion:
+  auto_promote: false         # true = auto-swap to winner
+  notify_channel: ""          # Slack webhook for "variant won!"
+  rollout_steps:              # Gradual promotion
+    - 5                       # Start at 5%
+    - 25                      # If good, go to 25%
+    - 50                      # Then 50%
+    - 100                     # Full rollout

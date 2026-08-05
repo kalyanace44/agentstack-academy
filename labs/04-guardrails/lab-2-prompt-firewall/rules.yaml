@@ -1,0 +1,72 @@
+# ─── Prompt Firewall Rules ────────────────────────────────────────
+# Block malicious prompts BEFORE they reach your LLM.
+# Action: block (HTTP 403) | warn (log + pass) | rewrite (sanitize + pass)
+
+rules:
+  # ─── Injection Attacks ─────────────────────────────────────────
+  role_override:
+    patterns:
+      - 'ignore.*previous.*instructions'
+      - 'you are now'
+      - 'forget.*everything'
+      - 'disregard.*above'
+      - 'system prompt'
+      - 'act as.*(?:admin|root|developer)'
+    action: block
+    severity: critical
+    message: "Prompt injection attempt blocked"
+
+  jailbreak:
+    patterns:
+      - 'DAN.*mode'
+      - 'do anything now'
+      - 'pretend.*no.*restrictions'
+      - 'hypothetical.*scenario.*bypass'
+      - 'roleplay.*(?:evil|villain|hacker)'
+    action: block
+    severity: critical
+    message: "Jailbreak attempt detected"
+
+  # ─── Data Exfiltration ─────────────────────────────────────────
+  data_leak:
+    patterns:
+      - 'repeat.*(?:system|initial).*prompt'
+      - 'show.*(?:instructions|configuration)'
+      - 'what.*(?:told|instructed).*to do'
+      - 'list.*(?:tools|functions|capabilities).*available'
+    action: block
+    severity: high
+    message: "Data exfiltration attempt"
+
+  # ─── Token Abuse ───────────────────────────────────────────────
+  token_bomb:
+    checks:
+      max_input_tokens: 4096
+      max_repetition_ratio: 0.4     # > 40% repeated content = suspicious
+      max_special_chars_ratio: 0.3  # > 30% non-alphanumeric = weird
+    action: block
+    severity: medium
+    message: "Token abuse detected (input exceeds safe limits)"
+
+  # ─── Output Control ────────────────────────────────────────────
+  output_control:
+    patterns:
+      - 'respond.*only.*(?:with|in).*(?:json|xml|code)'
+      - 'output.*(?:base64|encoded|hex)'
+      - 'translate.*(?:response|output).*(?:pig latin|backwards)'
+    action: warn      # Log but allow — might be legitimate
+    severity: low
+    message: "Suspicious output control attempt"
+
+# ─── Firewall Settings ───────────────────────────────────────────
+settings:
+  mode: enforce         # enforce | monitor | disabled
+  log_blocked: true
+  alert_webhook: ""     # Slack/PagerDuty URL for critical blocks
+  bypass_key: ""        # API key that skips firewall (for testing)
+
+  # Rate limiting (per API key)
+  rate_limits:
+    requests_per_minute: 60
+    tokens_per_minute: 100000
+    blocked_cooldown_seconds: 300   # 5 min cooldown after 3 blocks
